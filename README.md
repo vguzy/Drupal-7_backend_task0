@@ -33,6 +33,6 @@
  (error message when required field is not set, or success message if submit was successful). 
  
  When the form  is successfully submit it will CREATE a new node. Type of the node will be taken from the 
- first field  (“  article  ” or “  page  ”), language will be  neutral  and t itle  of the node will be set from the value of 
+ first field  (“  article  ” or “  page  ”), language will be neutral  and title  of the node will be set from the value of 
  Second field.   It will then show translatable success message “Node with [NID] was CREATED.”. 
  Replace [NID] with real node id;
