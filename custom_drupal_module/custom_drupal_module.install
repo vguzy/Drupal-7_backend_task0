@@ -1,0 +1,45 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the custom_drupal_module module.
+ */
+
+/**
+ * Implements hook_disable().
+ *
+ */
+function custom_drupal_module_disable() {
+    custom_drupal_module_clean_data();
+}
+
+/**
+ * Implements hook_enable().
+ */
+function custom_drupal_module_enable() {
+    $roles = ['show custom page'];
+    foreach ($roles as $name) {
+        $existing_role = user_role_load_by_name($name);
+        if (empty($existing_role)) {
+            $role = new stdClass();
+            $role->name = $name;
+            user_role_save($role);
+        }
+    }
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function custom_drupal_module_uninstall() {
+    custom_drupal_module_clean_data();
+}
+
+function custom_drupal_module_clean_data() {
+    $roles = ['show custom page'];
+    foreach ($roles as $name) {
+        $existing_role = user_role_load_by_name($name);
+        if (!empty($existing_role)) {
+            user_role_delete($name);
+        }
+    }
+}

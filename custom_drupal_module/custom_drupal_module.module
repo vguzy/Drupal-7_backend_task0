@@ -1,0 +1,116 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function custom_drupal_module_menu() {
+    $items['custom-page'] = [
+      'title' => 'Custom page',
+      'page callback' => 'custom_drupal_module_page',
+      'access callback' => 'custom_drupal_module_access_callback',
+      'access arguments' => ['show custom page'],
+    ];
+
+    return $items;
+}
+
+/**
+ * Check role.
+ */
+function custom_drupal_module_access_callback($role_name) {
+    if ($role = user_role_load_by_name($role_name)) {
+        return user_has_role($role->rid);
+    }
+
+    return FALSE;
+}
+
+/**
+ * Build form.
+ */
+function custom_drupal_module_form($form, &$form_state) {
+     
+    $form['type'] =[
+      '#title' => t('Node type'),
+      '#type' => 'radios',
+      '#options' => ['article' => t('article'), 'page' => t('page')],
+      '#required' => TRUE,
+      '#weight' => 0
+    ];
+    
+    $form['title'] = [
+      '#title' => t('Node title '),
+      '#type' => 'textfield',
+      '#required' => TRUE,
+      '#maxlength' => 128,
+      '#size' => 64,
+      '#weight' => 1
+    ];
+    
+    $form["wrapper"] = [
+      '#weight' => 9,
+      "#markup" => "<div id='custom-ajax'></div>"
+    ];
+    
+    $form['submit'] = [
+      '#type' => 'submit',
+      '#validate' => ['custom_drupal_module_ajax_form_validate'],
+      '#submit' => ['custom_drupal_module_ajax_form_submit'],
+      '#weight' => 10,
+      '#value' => t('Click Here!'),
+      '#ajax' => [
+        'callback' => 'custom_drupal_module_ajax_submit_callback',
+        'wrapper' => 'custom-ajax',
+      ],
+    ];
+
+    return $form;
+}
+
+
+/**
+ * Form validation
+ */
+function custom_drupal_module_ajax_form_validate($form, $form_state) {
+    //do the validations here
+    return true;
+}
+
+/**
+ * Form submit
+ */
+function custom_drupal_module_ajax_form_submit($form, &$form_state) {
+    $nid = custom_drupal_module_add_node($form_state);
+    drupal_set_message(t("Node with {$nid} was CREATED."));
+
+    $form_state['input'] = []; //remove user inputted values from form fields
+    $form_state['rebuild'] = TRUE; //rebuild form
+}
+
+function custom_drupal_module_ajax_submit_callback($form, $form_state) {
+    return ["#markup" => "<div id='custom-ajax'></div>"];
+}
+
+function custom_drupal_module_page() {
+   $build[] = drupal_get_form('custom_drupal_module_form');
+  
+  return $build;
+}
+
+
+/**
+ * Create node
+ */
+function custom_drupal_module_add_node(&$form_state) {
+    global $user;
+    $node = new stdClass();
+    $node->language = LANGUAGE_NONE;
+    $node->title = $form_state['values']['title'];
+    $node->type = $form_state['values']['type'];
+    node_object_prepare($node);
+    $node->uid = $user->uid;
+    $node->status = 1;
+    $node = node_submit($node);
+    node_save($node);
+    return $node->nid;
+}

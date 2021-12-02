@@ -1,0 +1,5 @@
+name = Custom page test module
+description = Custom page test module
+package = CUSTOM
+core = 7.x
+version = "7.x-1.0"
